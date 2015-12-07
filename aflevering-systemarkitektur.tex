@@ -1,0 +1,318 @@
+\documentclass[oneside]{memoir}
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{1}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{lipsum}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[width=15.00cm]{geometry}
+\title{Systemarkitektur til review 2}
+\author{Gruppe 7}
+\begin{document}
+		\maketitle
+
+	\textbf{Deltagere i afleveringen}
+	\begin{table}[H]
+		\centering
+		\label{navnetabel}
+		\begin{tabular}{|l|l|l|}
+			\hline
+			Studienummer & Navn                   & Studieretning \\ \hline
+			201409553    & Alex Imhof - \textbf{Kontaktperson }            & E             \\ \hline
+			201500156    & Simon Møller Hermansen & IKT           \\ \hline
+			201409557    & Victor Busk            & IKT           \\ \hline
+			201409552    & Andreas Lüdemann       & IKT           \\ \hline
+			20115758     & Ole Clausen            & IKT           \\ \hline
+			201407641    & Christoffer Søby Høj   & IKT           \\ \hline
+			201409551    & Daniella Tola          & E             \\ \hline
+		\end{tabular}
+	\end{table}
+	
+\begin{flushleft}
+		\textbf{Vejleder: } Carl Jakobsen
+\end{flushleft}
+\begin{table}[]
+	\centering
+	\label{my-label}
+	\begin{tabular}{|l|l|l|l|}
+		\hline
+		Ver. & Dato     & Initialer & Beskrivelse    \\ \hline
+		0.01 & 08.10.15 & AI        & Første version \\ \hline
+		0.02 & 22.11.15 & AI		& Rettelser efter Review \\ \hline
+	\end{tabular}
+\end{table}
+	
+		\newpage
+		\tableofcontents
+		\chapter{Systemarkitektur}
+		I følgende afsnit vil systemarkitekturen for et X.10 system der styrer en RGB LED fra et grafisk brugerinterface blive beskrevet. Systemets opbygning og funktionalitet vil blive beskrevet vha. diagrammer udviklet udfra sysml og uml standarderne. Funktionaliteten vil blive beskrevet udfra brugerens synspunkt på basis af usecases udviklet i specifikationen af projektet.
+		\section{Overordnet systembeskrivelse}	
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{"billeder til latex/UC1og2"}
+\caption{Sekvensdiagram for UC1 og UC2}
+\label{fig:UC1og2}
+\end{figure}
+	
+	Figur \ref{fig:UC1og2} viser et sekvensdiagram for use case 1 ”Regulate light intensity og RGB-LED” og use case 2 ”Turn on/off RGB-LED”. Diagrammet viser at user kan vælge en kommando på GUI. GUI sender en kommando QColor, som indeholder parametrene for red, green og blue. Det bliver videresendt til transmitter, som står og venter på en kommando. Transmitter sender en struct, som indeholder parametrene house, unit, red, green, blue, videre til receiver. Receiver tolker den modtagne data, og styrer niveauerne på de forskellige farver på RGB-LED’en. 
+\newpage
+		\subsection{Block definition diagram}
+		Ud fra use casene som der er udarbejdet i specifikationsfasen er der blevet udviklet et overordnet BDD ( figur \ref{fig:BDDoverordnet} ) for at skabe overblik i strukturen af systemet. Det overordnede BDD kan deles ned i blokke og bruges til at udvikle IBD'er for systemets interne struktur. 
+		
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{"billeder til latex/BDDoverordnet"}
+\caption{ Overordnet BDD }
+\label{fig:BDDoverordnet}
+\end{figure}
+		\newpage
+		\subsection{Internal block diagram}
+		Ud fra BDD er der udarbejdet et IBD for det overordnede system. Her illustreres dets overordnede hardwareblokke og deres forbindelser.
+		\begin{figure}[H]
+\centering
+\centerline{\includegraphics[width=1.1\linewidth]{"billeder til latex/IBDoverordnet"}}
+\caption{ IBD for det overordnede system }
+\label{fig:IBDoverordnet}
+\end{figure}
+
+\begin{flushleft}
+		Delsystemet Padlock som bruger vi i projektet er en ekstern enhed lavet i faget Digitalt System Design, Øvelse 7, Opgave 2 - "Code Lock".
+\end{flushleft}
+
+		\newpage
+		\subsection{Allokering af system}
+		
+		på figur \ref{fig:allokering} ses et overordnet allokeringsdiagram for Light Control System. Heraf fremgår de logiske blokke, som allokeres på en række komponenter. Transmitter og receiver er allokeret på hver sin STK-500. Herigennem foregår deres interne kommunikation ligeledes. Derudover fremgår det, at GUI’en er allokeret på PC’en, som koden ligger på.
+
+		\begin{figure}[H]
+\centering
+\includegraphics[width=1\linewidth]{"billeder til latex/allokering"}
+\caption{bdd allokering af software}
+\label{fig:allokering}
+\end{figure}
+\newpage
+\section{Grænseflader}
+
+
+\subsection{Protokoller}
+For at de forskellige delsystemer kan kommunikere med hinanden, fastlægges der nogle protokoller, som enhederne skal følge. Protokollerne sikrer at hvert delsystem udvikles efter de samme forudsætninger, på den måde kan delsystemerne finde ud af at tolke de data, der bliver udvekslet imellem dem. Protokollerne gør det også muligt for andre eksterne parter, at udvikle produkter der er kompatible med systemet.  \\
+\\
+For at gøre det muligt at sende en farvekode over X.10, er der implementeret en speciel "extendet code" der ligger udover X.10 protokollen. Denne extendet code beskrives i det følgende afsnit. \\
+\subsection{Farve konvertering}
+For at farven der bliver valgt på user interfacet kan sendes videre til receiveren, skal den være på det rigtige format. \\
+Formatet der arbejdes i, er en RGB-kode der består af 3-bits for hver farve/komponent. En farve kan derfor udtrykkes ved 1 værdie der går mellem 0 til 7, og en RGB-kode kommer derfor til at bestå af 3 af disse værdier, én for hver farve.\\
+
+\subsection{X.10}
+For at der kan kommunikeres fra transmitteren til receiveren over el-nettet, benyttes X.10 protokollen. \\
+Transmissionen af data over el-nettet er synkroniseret med zero crossing af AC spædingen, altså i det punkt for spændingen skære i 0.\\
+Her gælder det at forekomsten af et burst på 120 kHz i 1 ms, omkring det punkt, efterfulgt af en zero crossing, uden forekomsten af et burst, repræsentere et binært ”1”. \\
+Et binært ”0” repræsenteres ved manglen af et brust, efterfulgt af forekomsten af et burst ved zero corssing. Bittene sendes altså som komplementære par, for at mindske chancen for fejl. 
+\\\\\
+En X.10 data stream starter altid med at der bliver sendt en startkode ”1110” (4 zero crossings), her efter kommer der en 4-bit house code, som tager 8 zero crossings at sende, da de komplementære bit-par også skal sendes med. \\
+Herefter sendes så en 5-bit key code (10 zero crossings), der endten repræsentere en unit address eller en function code. \\
+Det er det sidste bit i key code (bit-5) der fortæller om det er en unit address eller en function code, og kan altså betragtes som en suffix. Det sidste bit vil altid være ”0” for en unit address og være ”1” for en function code. \\
+For at mindske chancen for fejl sendes en data stream altid 2 gange, efterfulgt af en stop code ”000000”.
+\\\\\
+Når der sendes en ny kommando sendes der først to data streams indeholdende unit addres’en, efterfulgt af to data streams der indeholder function code. \\
+For at RGB farvekoden kan sendes over X.10, er der implementeret en extendet code. I det tilfælde sendes der nu også 3 bits pr. farve. 
+\\\\
+Systemet er kun designet til at kunne sende og modtage enkelte udvalgte function codes som er kendt fra X.10 protokollen, samt den føromtalte extended code, som giver mulighed for at sende  farvekoden til receiveren. Det er altså ikke alle function codes fra X.10 protokollen der implementeres. 
+\\\\\
+De implementerede function codes og unit addresses er som følger på figur \ref{fig:X10-1}:
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.8]{"billeder til latex/X10-1"}
+\caption{Implementerede X10 function codes og unit adresses}
+\label{fig:X10-1}
+\end{figure}
+For at illustrer hvordan en extendet X.10 kommando kan se ud, er der opstillet en række tabeller nedenfor, der viser hvordan hele data strømmen kan se ud.\\
+Eksemplet der er er vist, sætter receiveren til at generer en PWM på 100\% på den røde kanal. \\
+Data strømmen til at se ud således:
+\\\\
+
+Addressen sendes 2 gange:
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{"billeder til latex/X10 unit adderes"}
+\caption{Adressen sendes via X.10}
+\label{fig:X10-2}
+\end{figure}
+Her efter sendes extendet code efterfulgt af 2 data bytes koden 2 gange:
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{"billeder til latex/X10 Extendet code"}
+\caption{X.10 kommandoen, extended code}
+\label{fig:X10-3}
+\end{figure}
+\subsection{Seriel kommunikation}
+For at kommunikere mellem PC og transmitter anvendes der en serial port. Seriel forbindelsen etableres af en RS-232 controller, der anvender UART (universal asynchronous receiver/transmitter) protokollen til at håndtere bittene. \\\\
+For at kunne kommunikere med transmitteren skal PC’en altså oprette den serielle forbindelse med følgende konfigurationer:
+\begin{itemize}
+	\item BAUD rate på 9600 kbit/s
+	\item Asynchronous normal mode 
+	\item Ingen parity bit.
+\end{itemize}
+
+Det giver et data frame med følgende formatering:
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{"billeder til latex/UART-frame"}
+\caption{UART dataframe}
+\label{fig:UART-1}
+\end{figure}
+For yderligere information om UART henvises der til protokollen.\\\\
+For at transmitteren kan sende de rigtige X.10 kommandoer videre, fra PC’en til receiveren, er der fastlagt et dataformat, der skal følges. \\\\
+Formatet består af, at der først sendes et ASCII-tegn ”!” (0x21), hvilket indikere at der bliver sendt en pakke. \\
+Derefter sendes house code ASCII (A-P),\\
+efterfulgt af unit address ASCII (01-16) \\\
+og til sidst en command code ASCII (0-F).
+\\\\
+Et eksempel på en data stream, hvor extented code benyttes,  der sætter RGB-LED’en til at lyse 100\% rød vil være:
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.5]{"billeder til latex/Serial kommunikkation"}
+	\caption{Eksempel på data- format og stream for seriel kommunikation}
+	\label{fig:UART-2}
+\end{figure}
+\newpage
+
+\section{Hardware arkitektur}
+
+\subsection{IBD for transmitter og receiver}
+Ud fra det overordnede IBD udvikles der IBD for sender og modtager, de kan ses på figur \ref{fig:IBDreceiver} og figur \ref{fig:IBDtransmitter}:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{"billeder til latex/IBDtransmitter"}
+\caption{IBD for transmitter}
+\label{fig:IBDtransmitter}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{"billeder til latex/IBDreceiver"}
+\caption{IBD for receiver}
+\label{fig:IBDreceiver}
+\end{figure}
+\subsection{Signalbeskrivelser}
+Ud fra IBD'erne kan signalerne imellem hardwareblokkene beskrives. På tabel \ref{table:signals} er der
+en tabel med signalbeskrivelser og tilhørende tekst,’strømforsynings’ signaler er udeladt: 
+\begin{table}[H]
+\centering
+\caption{Signalbeskrivelse}
+\label{table:signals}
+\begin{tabular}{llp{2.5cm}}
+\hline
+\textbf{Signaltype }          & \textbf{Definition   }                                           & \textbf{Beskrivelse  }                                              \\ \hline
+Digital              & TTL                                                &   Se figur \ref{fig:TTL}                       \\ \hline
+PWM                  & PWM 0 til +5V (+-500 mV)                                & Pulsmodulering til RGB-LED'en,\ dutycycle kan justeres      \\ \hline
+Firkantsignal        & X10S: 120 kHz(+-1 kHz): +2.5 V til -2.5 V(+-500 mV)              & Et 120 kHz signal med offset 0 V                           \\ \hline
+Seriel kommunikation & RS-232                                                 & Protokollen der bruges imellem PC og STK-500 i Transmitter \\ \hline
+Power 18 V AC        & 50 Hz 18 V AC: -25.5 V til +25.5 V sinus signal (+-1 V) & Vekselspændings- netværk som X10 protokollen kører over      \\ \hline
+\end{tabular}
+\end{table}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.5\linewidth]{"billeder til latex/TTL"}
+	\caption{Billede af TTL standarden.  \href{http://digital.ni.com/public.nsf/allkb/ACB4BD7550C4374C86256BFB0067A4BD}{LINK til beskrivelse af TTL}}
+	\label{fig:TTL}
+\end{figure} 
+\newpage
+\subsection{Transmitter}
+\begin{itemize}
+	\item \textbf{Zero-Crossing-detector’en} skal sortere 120 kHz signal fra, så der kun er 50 Hz signalet tilbage. Og så skal den sende et TTL signal ud til STK-500, der skifter fra 0 til 1, eller 1 til 0 når 18 V 50 Hz signalet har en falling edge eller en rising edge.
+	\item \textbf{120 kHz generator’en} genererer hele tiden et firkantsignal på 120 kHz. Den skal kun sende det videre ud på 18 V AC netværket når den får et TTL signal fra STK-500.
+	\item \textbf{STK-500} kommunikerer via seriel kommunikation med vores pc. Afhængigt af hvad den modtager fra PC’en, bruger den 120 kHz generatoren til at sende signaler ud på 18 V AC netværket i Zero crossings. STK-500 ’’omsætter’’ den serielle kommunikation fra pc til X.10 protokol.
+\end{itemize}
+\subsection{Receiver}
+\begin{itemize}
+	\item \textbf{Zero-Crossing-detector’en} gør i receiver’en det samme, som den gør i transmitter’en.
+	\item \textbf{Band pass filter’et} skal sortere 18 V 50 Hz fra, så der kun er et rent 120 kHz signal tilbage, som føres videre over i 120 kHz detector’en. 
+	\item \textbf{120 kHz detector’en} skal modtage 120 kHz signalet fra band pass filteret. Hvis den modtager et 120 kHz signal, skal den sende et TTL ’1’ til STK-500. 
+	\item \textbf{STK-500} skal udsende tre PWM signaler til RGB-LED’en afhængigt af kommandoen modtaget over X10. 
+	
+\end{itemize}
+\newpage
+\subsection{Timing diagram}
+Timing diagrammet på figur \ref{fig:timing} beskriver for vores system, hvornår der kan sendes burst på 120 kHz. spændingen på sinuskurven er 18 volt AC, hvilket vil sige, at signalet svinger med en spænding mellem 25.5 V og -25.5 V i en sinusform med en frekvens på 50 Hz. Hver gang denne spænding når 0 volt og har zero-crossing, kan der sendes et burst på 120 kHz.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\linewidth]{"billeder til latex/timing"}
+\caption{Timing diagram x: tid, y: spænding}
+\label{fig:timing}
+\end{figure}
+\newpage
+\section{Software arkitektur}
+I det følgende afsnit beskrives softwarearkitekturen blandt andet med en domænemodel, som er lavet med udgangspunkt i at kravene fra alle Use Cases skal kunne opfyldes. Ud fra domænemodellen beskrives softwaren med klasse- og sekvensdiagrammer for hvert delsystem, PC, Transmitter og Receiver, og der identificeres grænseflade-, domæne- og kontrolklasser. For at sikre at delsystemerne kan ”tale” sammen, beskrives protokollerne for grænseflade-kommunikationen mellem disse også i dette afsnit. Softwarearkitekturen skaber grundlag for fordeling af arbejdsområderne og muligøre at systemet kan designes, i mindre blokke uafhængigt af om der kommunikeres på tværs af udviklingsholdene.
+
+\subsection{Domænemodel}
+Domænemodellen er udarbejdet ud fra alle use-cases og viser de forskellige elementer i systemet og interaktioner mellem disse.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{"billeder til latex/Domain"}
+\caption{Domænemodel}
+\label{fig:Domain}
+\end{figure}
+\subsection{Applikationsmodel for transmitter og Receiver}
+Figur \ref{fig:UMLdiagram} viser et udkast til et UML klassediagram for receiver. Main programmet indeholder to klasser, X10IF og RGB-LED Driver. X10IF skal kunne modtage en kommando fra Transmitter. RGB-LED Driver får oplysninger fra X10IF om hvilke niveauer red, green og blue skal være, og sender det videre til RGB-LED med funktionen setLight. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{"billeder til latex/UMLdiagram"}
+\caption{UML klassediagram for modtageren}
+\label{fig:UMLdiagram}
+\end{figure}
+
+Figur \ref{fig:UMLtransmitter} viser et udkast til et UML klassediagram for transmitter. Main programmet indeholder to klasser, X10IF og SerialIF. SerialIF skal kunne modtage en kommando fra GUI. X10IF får oplysninger fra SerialIF om hvilke niveauer red, green og blue skal være, og sender det videre til receiver. 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\linewidth]{"billeder til latex/UMLtransmitter"}
+\caption{UML klassediagram for senderen}
+\label{fig:UMLtransmitter}
+\end{figure}
+
+
+
+\newpage
+
+\newpage
+\subsection{Applikationsmodel for UC1}
+\subsubsection{Klassediagram for UC1}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{"billeder til latex/ApplikationsmodelUC1"}
+\caption{Klassediagram for Use Case 1: Regulate Light Intensity of RGB-LED
+}
+\label{fig:ApplikationsmodelUC1}
+\end{figure}
+\subsubsection{Domæneklassen}
+\begin{itemize}
+	\item	\textbf{Protocol} – Formaterer og sender den valgte farve til Transmitteren
+\end{itemize}
+\subsubsection{Grænsefladeklasser}
+\begin{itemize}
+	\item \textbf{Transmitter} - Grænsefladeklasser til Receiver
+	\item \textbf{GUI} - Grafisk brugerflade mellem pc og bruger
+	\item \textbf{Color preview} - viser den aktuelle kombination af rød, grøn og blå, som sendes til LED'en
+\end{itemize}
+\subsubsection{Kontrolklassen}
+\begin{itemize}
+	\item \textbf{Regulate Light Intensity of RGB-LED} – Kontrolklassen, der håndterer den sekventielle gennemgang af Use Case 1, når brugeren interagerer med brugergrænsefladen.
+\end{itemize}
+\newpage
+\subsubsection{Sekvensdiagram for PC: UC1}
+Det følgende klassediagram indeholder forslag til klasser fra Use Case 1. 
+På figur \ref{fig:SD-UC1} ses et sekvensdiagram for Use Case 1, hvor metoderne fra klassediagrammet fremgår. Diagrammet er opbygget med to alternative handlingsforløb, idet Use casen kan forløbe på forskellige måder afhængigt af, om der interageres med GUI’ens sliders eller color wheel.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=1\linewidth]{"billeder til latex/SD - UC1"}
+	\caption{Sekvens diagram Use case 1, RLI af RGB-LED}
+	\label{fig:SD-UC1}
+\end{figure}
+
+\end{document}

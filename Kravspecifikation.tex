@@ -1,0 +1,277 @@
+\documentclass[oneside]{memoir}
+\setcounter{tocdepth}{2}
+\setcounter{secnumdepth}{1}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{lipsum}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{url}
+\usepackage[width=15.00cm]{geometry}
+\title{Kravspecifikation}
+\author{Gruppe 7}
+\begin{document}
+		\maketitle
+	\textbf{Deltagere i afleveringen}
+			\begin{table}[H]
+		\centering
+		\label{my-label}
+		\begin{tabular}{|l|l|l|}
+			\hline
+			Studienummer & Navn                   & Studieretning \\ \hline
+			201409553    & Alex Imhof - \textbf{Kontaktperson } &E\\ \hline
+			201500156    & Simon Møller Hermansen & IKT           \\ \hline
+			201409557    & Victor Busk            & IKT           \\ \hline
+			201409552    & Andreas Lüdemann       & IKT           \\ \hline
+			20115758     & Ole Clausen            & IKT           \\ \hline
+			201407641    & Christoffer Søby Høj   & IKT           \\ \hline
+			201409551    & Daniella Tola          & E             \\ \hline
+		\end{tabular}
+	\end{table}
+\begin{flushleft}
+		\textbf{Vejleder: } Carl Jakobsen
+\end{flushleft}
+\begin{table}[]
+	\centering
+	\label{my-label}
+	\begin{tabular}{|l|l|l|l|}
+		\hline
+		Ver. & Dato     & Initialer & Beskrivelse    \\ \hline
+		0.01 & 02.10.15 & DT        & Første version \\ \hline
+		0.02 & 08.10.15 & OC		& Rettet efter 1. Review \\ \hline
+		0.03 & 29.10.15 & OC 		& Rettelser med inputs fra CJ \\ \hline
+		0.04 & 07.11.15 & DT		& Rettelser og tilføjet beskrivelse af projektudvikling \\ \hline
+		0.05 & 24.11.15 & DT		& Rettelser efter 2. Review \\ \hline
+	\end{tabular}
+\end{table}
+
+	\newpage
+		\tableofcontents
+		\chapter{Kravspecifikation}
+		Formålet med dette dokument er at beskrive hvilke funktionelle og ikke funktionelle krav, der er bestemt for at lave produktet.
+Specifikation af systemet beskrives også med krav, der fortæller hvad systemets funktioner er, og om
+systemets kvalitet.
+		\section{Systembeskrivelse}	
+Vi har valgt at lave et lyskontrolsystem (Light Control System). Dette system består af et brugerinterface (GUI) på en pc og en elektronisk kodelås (padlock) der kan styre en RGB-LED. Et led af kommunikationen mellem styringen og RGB-LED’en foregår over et vekselspændingsnet. 
+Kommunikationen over nettet sker mellem to stykker hardware der fungerer som sender (transmitter) og modtager (receiver). 
+Brugeren kan på padlocken indtaste to koder ved at trykke på en knap (lock/unlock Button). Såfremt adgangskoderne er korrekte, vil de indstillinger man har indtastet på pc’en blive sendt videre til receiveren og kan på den måde påvirke RGB-LED’en. Hvis man derimod ikke har indtastet koderne korrekt vil indtastningerne på pc’en ikke blive sendt videre. På pc’en kan man tænde og slukke for en RGB-LED’en samt skrue op og ned for intensiteten af de enkelte farver.
+
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{"Kravspecifikation/Systembeskrivelse"}
+\caption{Systemet med brugergrænseflade og enheder}
+\label{fig:Systembeskrivelse}
+\end{figure}
+
+        \section{Funktionelle krav formuleret ved UCs}
+    \subsection{Use Case Diagram}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{"Kravspecifikation/ucdiagram"}
+\caption{Use Case diagram for Light Control System}
+\label{fig:ucdiagram}
+\end{figure}
+
+        \subsection{Aktørbeskrivelse}
+Aktørerne i use case diagrammet beskrives følgende: 
+\newline
+ \textbf{User:} Det er den primære aktør, der har muligheden for at styre lysintensiteten, skifte farve på lyset, tænde og slukke lyset. Samt at låse systemet.
+\textbf{RGB-LED:} Det er den sekundære aktør, som kontrolleres igennem brugergrænsefladen.
+        \subsection{Fully Dressed Use Cases}
+The RGB-LED is an X.10 compatible device.
+
+
+\begin{table}[]
+\centering
+\caption{UC1}
+\label{my-label}
+\begin{tabularx}{\textwidth}{|l X|} 
+\hline
+Name                             & UC1: Regulate Light Intensity of RGB-LED   \\ \hline
+Goal                             & Control RGB-LED variables from computer    \\ \hline
+Intitiation                      & User mouse over sliders and click          \\ \hline
+Actors                           & User, RGB-LED                              \\ \hline
+Number of concurrent occurrences & 1                                          \\ \hline
+Precondition                     & System is operational. System is unlocked. \\ \hline
+Post condition                   & RGB-LED behaves as prompted by the faders  \\ \hline
+Main Scenario                    & 
+                                 
+                                    \begin{enumerate} 
+                                 \item User chooses to increase/decrease light intensity of the various colors on GUI 
+                              \begin{enumerate}[label*=\arabic*.]
+                                \item User pulls “Red” slider up, down or changes nothing
+                                \item User pulls “Green” slider up, down or changes nothing
+                                \item User pulls “Blue” slider up, down or changes nothing
+                                \item User adjusts the “Color Wheel”
+                                        \end{enumerate}
+                                \item User interface updates color preview
+                                \item Computer sends data to transmitter
+                                \item Transmitter sends commands to receiver
+                                \item Receiver displays received color data on RGB-LED
+                                 \end{enumerate} 
+                                 \\     \hline
+\end{tabularx}
+\end{table}
+
+
+
+\begin{table}[]
+\centering
+\caption{UC2}
+\label{my-label}
+\begin{tabularx}{\textwidth}{|l X|}
+\hline
+Name                             & UC2: Turn on/off RGB-LED   \\ \hline
+Goal                             & To turn the RGB-LED on/off    \\ \hline
+Intitiation                      & User mouse over and click button          \\ \hline
+Actors                           & User, RGB-LED                              \\ \hline
+Number of concurrent occurrences & 1                                          \\ \hline
+Precondition                     & Computer is on. Control program is open and the desired device
+has been chosen. System is unlocked. \\ \hline
+Post condition                   & RGB-LED is turned on with chosen settings  \\ \hline
+Main Scenario                    & \begin{enumerate}
+                                    \item User mouse over and clicks the "on/off" button
+                                    \item User interface stops sending data to transmitter system
+                                    \end{enumerate} \\ \hline
+                                  
+\end{tabularx}
+\end{table}
+
+
+\begin{table}[]
+\centering
+\caption{UC3}
+\label{my-label}
+\begin{tabularx}{\textwidth}{|l X|}
+\hline
+Name                             & UC3: Unlock Transmitter   \\ \hline
+Goal                             & Unlock Transmitter from padlock   \\ \hline
+Intitiation                      & User moves switches          \\ \hline
+Actors                           & User                              \\ \hline
+Number of concurrent occurrences & 1                                          \\ \hline
+Precondition                     & Transmitter is locked and display shows the text “Locked”. \\ \hline
+Post condition                   & Transmitter is unlocked and display shows the text: “Unlocked”.  \\ \hline
+Main Scenario                    & \begin{enumerate}
+                                    \item User enters a 4-bit password by moving the switches on
+the padlock
+                                    \item User presses unlock button on padlock
+                                    \item Padlock validates password
+                                    \newline Extension 1: The password is wrong
+                                    \item Display shows text: “Unlocked”
+                                    \item Padlock sends an unlock signal (5 V) to transmitter
+                                    \end{enumerate} \\ \hline
+ Extension                      & [Extension 1: The password is wrong]
+                                    \newline \begin{enumerate}
+                                    \item Display continues displaying: "Locked"
+                                    \end{enumerate} \\ \hline
+\end{tabularx}
+\end{table}
+
+
+\begin{table}[]
+\centering
+\caption{UC4}
+\label{my-label}
+\begin{tabularx}{\textwidth}{|l X|}
+\hline
+Name                             & UC4: Lock Transmitter   \\ \hline
+Goal                             & Lock Transmitter   \\ \hline
+Intitiation                      & User presses lock button         \\ \hline
+Actors                           & User                              \\ \hline
+Number of concurrent occurrences & 1                                          \\ \hline
+Precondition                     & Transmitter is unlocked and display shows text: “Unlocked” \\ \hline
+Post condition                   & Transmitter is locked and display says: “Locked”  \\ \hline
+Main Scenario                    & \begin{enumerate}
+                                    \item User presses lock button
+
+                                    \item Display shows text: "Locked"
+                                    
+                                    
+                                    \item The padlock sends lock signal (0V) to transmitter
+                                    \end{enumerate} \\ \hline
+
+\end{tabularx}
+\end{table}
+
+
+\section{Kvalitetskrav/ikke-funktionelle krav}
+\begin{enumerate}
+\item Generelle Krav
+    \begin{enumerate}[label*=\arabic*.]
+    \item Den benyttede AC net skal af sikkerhedsmæssige årsager være 18V rms, 560mA.
+    \item RS232 benyttes til at lave seriel kommunikation. Baud raten skal være større end 109 Baud, og
+mindre end 115201 Baud.
+    \end{enumerate}
+\item RGB-LED'en
+    \begin{enumerate}[label*=\arabic*.]
+    \item Lysintensiteten fra RGB-LED’en skal kunne dimmes i 8 trin pr. farve (R, G, B) via. X.10 standart
+kommandoer.
+    \item RGB-LED’en skal fade mellem disse 8 trin.
+    \item Hver farve i RGB-LED’en skal trække en strøm på 20 mA +/- 1 mA\footnote{\url{https://en.wikipedia.org/wiki/Visible_spectrum}} .
+    \item RGB-LED’en skal kunne udsende 3 forskellige bølgelængde: 620-750 nm(rød), 495-570 nm(grøn),
+450-495 nm(blå)\footnote{\url{http://www.dioder-online.dk/rgb-diode-9400mcd-35-5mm-ultrabright.html}}.
+    \end{enumerate}
+\end{enumerate}
+
+En del af kravene er, at vi følger X10 standarden. Se evt. side 13\footnote{\url{http://ww1.microchip.com/downloads/en/AppNotes/00236a.pdf}}. Vi benytter os af extended code og
+derefter sender en selvlavet funktion, og derfor kan man sige, at vi følger X10 standarden delvist.
+
+
+\section{Andre krav}
+\subsection{Krav til anvendt udviklingsproces}
+ektet bliver udviklet ved at bruge Scrum princippet delvist. Gruppen har planlagt, at der er møde en gang
+om ugen, hvor hver eneste gruppemedlem fortæller om sin status med udviklingen. Der benyttes også sprint,
+hvor der er interne deadlines for hver gruppemedlem. Gruppen har delt en gruppelederrolle ud til Alex, hvor
+han indkalder til møder og har det samlede overblik. ASE-modellen er den udviklingsmodel, der blvier brugt i dette projekt.
+
+\subsection{Krav til anvendte udviklingsværktøjer}
+Det er blevet besluttet at den grafiske brugergrænseflade GUI udvikles i softwaren Qt. Øvrige software-dele
+i projektet skrives i C++.
+
+
+
+
+
+
+
+
+\begin{table}[]
+\centering
+\caption{UC1}
+\label{my-label}
+\begin{tabularx}{1.1\textwidth}{|X|X|} 
+\hline
+Name                             & UC1: Regulate Light Intensity of RGB-LED   \\ \hline
+Goal                             & Control RGB-LED variables from computer    \\ \hline
+Intitiation                      & User mouse over sliders and click          \\ \hline
+Actors                           & User, RGB-LED                              \\ \hline
+Number of concurrent occurrences & 1                                          \\ \hline
+Precondition                     & System is operational. System is unlocked. \\ \hline
+Post condition                   & RGB-LED behaves as prompted by the faders  \\ \hline
+Main Scenario                    &   
+                                  \begin{enumerate} 
+                                 \item User chooses to increase/decrease light intensity of the various colors on GUI 
+                              \begin{enumerate}[label*=\arabic*.]
+                                \item User pulls “Red” slider up, down or changes nothing
+                                \item User pulls “Green” slider up, down or changes nothing
+                                \item User pulls “Blue” slider up, down or changes nothing
+                                \item User adjusts the “Color Wheel”
+                                        \end{enumerate}
+                                \item User interface updates color preview
+                                \item Computer sends data to transmitter
+                                \item Transmitter sends commands to receiver
+                                \item Receiver displays received color data on RGB-LED
+                                 \end{enumerate} 
+                                 
+                                 \\     \hline
+\end{tabularx}
+\end{table}
+
+
+\end {document}
